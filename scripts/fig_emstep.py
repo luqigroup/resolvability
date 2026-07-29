@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""The one-EM-step schematic: where an archive-trained prior's belief comes from.
+"""The one-EM-step schematic: where an archive-trained prior's spread comes from.
 
 In resolved-blind coordinates, an archive of legacy reconstructions is the handcrafted
 regularizer (rho, dashed) advanced one population-EM step to the curated prior (q_rho, solid). On
-the resolved direction the belief moves toward the truth -- a marginal-likelihood ascent, so it
+the resolved direction the spread moves toward the truth -- a marginal-likelihood ascent, so it
 does not reach it; on the blind direction it does not move at all, its mean and spread frozen at
 the regularizer's, tighter than the truth. The "after" ellipse is one exact step of the
 linear-Gaussian population-EM map applied to rho, not hand-drawn, so the geometry is faithful.
@@ -22,8 +22,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 from matplotlib.patches import Ellipse, FancyArrowPatch  # noqa: E402
 
-from priorlaundermat.download import REPO  # noqa: E402
-from priorlaundermat.style import PALETTE, apply_paper_style  # noqa: E402
+from resolvability.download import REPO  # noqa: E402
+from resolvability.style import PALETTE, apply_paper_style  # noqa: E402
 
 apply_paper_style()
 plt.rcParams.update({"font.family": "serif", "mathtext.fontset": "cm"})
@@ -89,11 +89,9 @@ def main():
 
     # the single EM-step arrow: purely horizontal (the blind coordinate never moves);
     # start/end at the ellipse edges in data coordinates so it never pierces a stroke
-    x_tail = mu_rho[0] - np.sqrt(Sig_rho[0, 0]) - 0.14
-    x_head = mu_q[0] + np.sqrt(Sig_q[0, 0]) + 0.14
-    ax.add_patch(FancyArrowPatch((x_tail, mu_rho[1]), (x_head, mu_q[1]),
-                                 arrowstyle="-|>", mutation_scale=15, lw=1.7,
-                                 color=GREY, zorder=2, shrinkA=0, shrinkB=0))
+    ax.add_patch(FancyArrowPatch((mu_rho[0], mu_rho[1]), (mu_q[0], mu_q[1]),
+                                 arrowstyle="-|>", mutation_scale=15, lw=1.9,
+                                 color=GREY, zorder=6, shrinkA=0, shrinkB=0))
     ax.text((mu_rho[0] + mu_q[0]) / 2, mu_rho[1] + 1.02,
             "resolved: moved toward the truth", color=RESOLVED, fontsize=8.5,
             ha="center", va="bottom")
@@ -105,7 +103,7 @@ def main():
         ax.plot([0.0, xg], [yy, yy], color=BLIND, lw=0.7, ls=":", alpha=0.5, zorder=1)
     ax.annotate("", xy=(xg, mu_q[1]), xytext=(xg, mu_star[1]),
                 arrowprops=dict(arrowstyle="<->", color=BLIND, lw=1.9, mutation_scale=12))
-    ax.text(xg - 0.45, (mu_q[1] + mu_star[1]) / 2, "blind:\nfrozen at\n$\\rho$'s belief",
+    ax.text(xg - 0.45, (mu_q[1] + mu_star[1]) / 2, "blind:\nfrozen at\n$\\rho$'s spread",
             color=BLIND, fontsize=8.5, va="center", ha="right", linespacing=1.3)
 
     # direct labels on the three objects

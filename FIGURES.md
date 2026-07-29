@@ -18,6 +18,9 @@ Output lands in `figures/`.
 | the seismic teaser | `fig_hero.py` | seismic DPS reconstructions, prior samples, illumination, κ, evaluation window |
 | reliability grid | `fig_reliability_grid.py` | seismic per-seed coordinates; groundwater pCN coverage, 3 seeds per arm |
 | groundwater single-survey posterior | `fig_darcy_posterior.py` | groundwater single-survey pCN record |
+| blind-minus-resolved gap, and where the spread goes | `fig_gap.py` | seismic per-seed coordinates and the legacy archive; groundwater pCN coverage, 3 seeds per arm |
+| what the cut is applied to, and that the reading survives it | `fig_seismic_cutoff.py` | illumination spectrum (measured by forward apply); cutoff sweep |
+| what an added measurement corrects, and what it leaves frozen | `fig_darcy_augment.py` | groundwater borehole channel, joint archive, flow checkpoints |
 
 ## Regenerating the caches
 
@@ -36,6 +39,7 @@ as a dependency. Runtimes are on one modern GPU where marked, otherwise one CPU 
 | 6 | incident-wavefield illumination | `seismic_illumination.py` | ~10 min | no (Devito) |
 | 7 | per-seed blind/resolved coverage coordinates | `seismic_calibrate.py` | ~6 h | yes |
 | 8 | diffusion posterior sampling on the Born operator | `seismic_dps_posterior.py` | ~4 h | yes |
+| 9 | background-model stability of the blind set, and `tab:m0` | `seismic_m0_stability.py --phase stability` | ~2 min | no (Devito) |
 
 ### Groundwater (Darcy flow)
 

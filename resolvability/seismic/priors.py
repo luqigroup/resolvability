@@ -90,6 +90,35 @@ def load_eval(key: str, a: int, b: int) -> np.ndarray:
     return np.stack([water_mute(x, MUTE_END, TAPER) for x in X]).reshape(b - a, N * N)
 
 
+def archive_row(bases, lo, ne, levels=(0.9,)):
+    """The legacy archive itself, scored on the same subspaces as the priors it trains.
+
+    One definition, shared by the calibration script and ``scripts/fig_gap.py``: the archive is the
+    deficit the curated prior is said to have inherited, so the two must never drift apart. The
+    archive carries a physical amplitude rather than a generative model's, so it is put on the same
+    data-fixed scale the priors use, ``kap = sqrt(E_sig / E_archive)``, which is measurement-only and
+    never references a truth.
+
+    ``bases`` is ``{name: Q}`` with ``Q`` of shape ``(r, N*N)``. Returns
+    ``{name: (coverage_at_levels, spread_ratio)}``.
+    """
+    truth = load_eval("broadband_dm", lo, lo + ne)
+    arch = load_eval("lsrtm5", lo, lo + ne)
+    kz = np.load(ensure("results/seismic_data_kappa.npz"))
+    kap = float(np.sqrt(kz["E_sig_rows"][lo:lo + ne].mean() / kz["E_archive"].mean()))
+
+    out = {}
+    for name, Q in bases.items():
+        Pt, P = truth @ Q.T, (arch @ Q.T) * kap
+        cov = []
+        for a in levels:
+            q0, q1 = np.quantile(P, (1 - a) / 2, 0), np.quantile(P, (1 + a) / 2, 0)
+            cov.append(float(np.mean([((Pt[i] >= q0) & (Pt[i] <= q1)).mean()
+                                      for i in range(len(Pt))])))
+        out[name] = (np.array(cov), float(P.var(0).sum() / Pt.var(0).sum()))
+    return out
+
+
 @torch.no_grad()
 def sample_prior(ckpt_path: str, base: int, n: int, chunk: int, n_steps: int,
                  device, sampler: str = "ddpm") -> np.ndarray:
